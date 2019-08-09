@@ -12,6 +12,9 @@
                             <p class="qunmsg">Bob：还在测试中呢</p>
                         </div>
                     </li>
+                    <p v-for="data in showDatas" v-bind:key="data">
+                        {{data}}
+                    </p>
                 </ul>
             </div>
             <app-nav></app-nav>
@@ -19,13 +22,97 @@
     </div>
 </template>
 <script>
-import { chatroom } from '@/http/api'
+import { chatroom } from '@/http/api';
+var RongIMLib = require('../../../static/js/RongIMLib-2.5.0.js')
+var Protobuf = require('../../../static/js/protobuf-2.3.5.min.js')
+// var RongIMEmoji = require('../../static/js/RongEmoji-2.2.7.js')
+var RongIMClient = RongIMLib.RongIMClient
+function init (params, addPromptInfo) {
+    var appkey = params.appkey
+    var token = params.token
+    var navi = params.navi
+    var config = {
+        protobuf: Protobuf
+    }
+    if (navi) {
+        config.navi = navi
+    }
+    RongIMClient.init(appkey, null, config)
+    RongIMClient.setConnectionStatusListener({
+        onChanged: function (status) {
+            switch (status) {
+                case RongIMLib.ConnectionStatus['CONNECTED']:
+                case 0:
+                    addPromptInfo('连接成功')
+                break
+                case RongIMLib.ConnectionStatus['CONNECTING']:
+                case 1:
+                    addPromptInfo('连接中')
+                break
+                case RongIMLib.ConnectionStatus['DISCONNECTED']:
+                case 2:
+                    addPromptInfo('当前用户主动断开链接')
+                break
+                case RongIMLib.ConnectionStatus['NETWORK_UNAVAILABLE']:
+                case 3:
+                    addPromptInfo('网络不可用')
+                break
+                case RongIMLib.ConnectionStatus['CONNECTION_CLOSED']:
+                case 4:
+                    addPromptInfo('未知原因，连接关闭')
+                break
+                case RongIMLib.ConnectionStatus['KICKED_OFFLINE_BY_OTHER_CLIENT']:
+                case 6:
+                    addPromptInfo('用户账户在其他设备登录，本机会被踢掉线')
+                break
+                case RongIMLib.ConnectionStatus['DOMAIN_INCORRECT']:
+                case 12:
+                    addPromptInfo('当前运行域名错误，请检查安全域名配置')
+                break
+            }
+        }
+    })
+    RongIMClient.setOnReceiveMessageListener({
+        // 接收到的消息
+        onReceived: function (message) {
+            addPromptInfo('新消息 ' + message.targetId + ':' + JSON.stringify(message))
+        }
+    })
+    RongIMClient.connect(token, {
+        onSuccess: function(userId) {
+            console.log('连接成功,用户id：' + userId);
+        },
+        onTokenIncorrect: function() {
+            this.$toast.error('token 无效');
+        },
+        onError: function(errorCode){
+            switch (errorCode) {
+                case RongIMLib.ErrorCode.TIMEOUT:
+                    this.$toast.error('超时');
+                break;
+                case RongIMLib.ConnectionState.UNACCEPTABLE_PAROTOCOL_VERSION:
+                    this.$toast.error('不可接受的协议版本');
+                break;
+                case RongIMLib.ConnectionState.IDENTIFIER_REJECTED:
+                    this.$toast.error('appkey不正确');
+                break;
+                case RongIMLib.ConnectionState.SERVER_UNAVAILABLE:
+                    this.$toast.error('服务器不可用');
+                break;
+            }
+        }
+    },null)
+}
 export default {
     name:'chat',
     data(){
         return{
             chatroomList: null,
             errorImg: require('../../assets/img/newfriend.png'),
+            appkey: '8w7jv4qb836py',
+            token: localStorage.getItem('RcToken'),
+            navi: '',
+            showDatas: []
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -51,7 +138,18 @@ export default {
             })
         },
 
-
+        addPromptInfo: function (prompt) {
+            this.showDatas.push(prompt)
+        },
+        init: function () {
+            var appkey = this.appkey;
+            var token = this.token;
+            if (!appkey || !token) {
+                this.$toast.warning('appkey 和 token 不能为空')
+            } else {
+                init({appkey: appkey,token: token,navi: this.navi}, this.addPromptInfo)
+            }
+        },
 
         formatTime:function(number,format){
             var formateArr = ['Y','M','D','h','m','s'];
@@ -79,83 +177,7 @@ export default {
     // html加载完成之后执行
     mounted(){
         this.getChatList();
-        // RongIMLib.RongIMClient.init(appkey, [dataAccessProvider], [options]);
-        RongIMLib.RongIMClient.init('8w7jv4qb836py');
-        // 连接状态监听器
-        RongIMClient.setConnectionStatusListener({
-            onChanged: function (status) {
-                // status 标识当前连接状态
-                switch (status) {
-                    case RongIMLib.ConnectionStatus.CONNECTED:
-                        console.log('链接成功');
-                    break;
-                    case RongIMLib.ConnectionStatus.CONNECTING:
-                        console.log('正在链接');
-                    break;
-                    case RongIMLib.ConnectionStatus.DISCONNECTED:
-                        console.log('断开连接');
-                    break;
-                    case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
-                        console.log('其他设备登录');
-                    break;
-                    case RongIMLib.ConnectionStatus.DOMAIN_INCORRECT:
-                        console.log('域名不正确');
-                    break;
-                    case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
-                        console.log('网络不可用');
-                    break;
-                }
-            }
-        });
-        // 消息监听器
-        RongIMClient.setOnReceiveMessageListener({
-            // 接收到的消息
-            onReceived: function (message) {
-                // 判断消息类型
-                switch(message.messageType){
-                    case RongIMClient.MessageType.TextMessage:
-                        // message.content.content => 文字内容
-                        break;
-                    case RongIMClient.MessageType.VoiceMessage:
-                        // message.content.content => 格式为 AMR 的音频 base64
-                        break;
-                    case RongIMClient.MessageType.ImageMessage:
-                        // message.content.content => 图片缩略图 base64
-                        // message.content.imageUri => 原图 URL
-                        break;
-                    case RongIMClient.MessageType.LocationMessage:
-                        // message.content.latiude => 纬度
-                        // message.content.longitude => 经度
-                        // message.content.content => 位置图片 base64
-                        break;
-                    case RongIMClient.MessageType.RichContentMessage:
-                        // message.content.content => 文本消息内容
-                        // message.content.imageUri => 图片 base64
-                        // message.content.url => 原图 URL
-                        break;
-                    case RongIMClient.MessageType.InformationNotificationMessage:
-                        // do something
-                        break;
-                    case RongIMClient.MessageType.ContactNotificationMessage:
-                        // do something
-                        break;
-                    case RongIMClient.MessageType.ProfileNotificationMessage:
-                        // do something
-                        break;
-                    case RongIMClient.MessageType.CommandNotificationMessage:
-                        // do something
-                        break;
-                    case RongIMClient.MessageType.CommandMessage:
-                        // do something
-                        break;
-                    case RongIMClient.MessageType.UnknownMessage:
-                        // do something
-                        break;
-                    default:
-                        // do something
-                }
-            }
-        });
+        this.init(); //初始化融云,并连接融云服务器
     },
 }
 </script>
