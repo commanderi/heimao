@@ -23,86 +23,13 @@
 </template>
 <script>
 import { chatroom } from '@/http/api';
-var RongIMLib = require('../../../static/js/RongIMLib-2.5.0.js')
-var Protobuf = require('../../../static/js/protobuf-2.3.5.min.js')
-// var RongIMEmoji = require('../../static/js/RongEmoji-2.2.7.js')
+// import { init } from '../../assets/js/init';
+var RongIMLib = require('../../../static/js/RongIMLib-2.5.0.js')  // RongIMLib 相对路径
+var Protobuf = require('../../../static/js/protobuf-2.3.5.min.js')  // protobuf 相对路径
 var RongIMClient = RongIMLib.RongIMClient
-function init (params, addPromptInfo) {
-    var appkey = params.appkey
-    var token = params.token
-    var navi = params.navi
-    var config = {
-        protobuf: Protobuf
-    }
-    if (navi) {
-        config.navi = navi
-    }
-    RongIMClient.init(appkey, null, config)
-    RongIMClient.setConnectionStatusListener({
-        onChanged: function (status) {
-            switch (status) {
-                case RongIMLib.ConnectionStatus['CONNECTED']:
-                case 0:
-                    addPromptInfo('连接成功')
-                break
-                case RongIMLib.ConnectionStatus['CONNECTING']:
-                case 1:
-                    addPromptInfo('连接中')
-                break
-                case RongIMLib.ConnectionStatus['DISCONNECTED']:
-                case 2:
-                    addPromptInfo('当前用户主动断开链接')
-                break
-                case RongIMLib.ConnectionStatus['NETWORK_UNAVAILABLE']:
-                case 3:
-                    addPromptInfo('网络不可用')
-                break
-                case RongIMLib.ConnectionStatus['CONNECTION_CLOSED']:
-                case 4:
-                    addPromptInfo('未知原因，连接关闭')
-                break
-                case RongIMLib.ConnectionStatus['KICKED_OFFLINE_BY_OTHER_CLIENT']:
-                case 6:
-                    addPromptInfo('用户账户在其他设备登录，本机会被踢掉线')
-                break
-                case RongIMLib.ConnectionStatus['DOMAIN_INCORRECT']:
-                case 12:
-                    addPromptInfo('当前运行域名错误，请检查安全域名配置')
-                break
-            }
-        }
-    })
-    RongIMClient.setOnReceiveMessageListener({
-        // 接收到的消息
-        onReceived: function (message) {
-            addPromptInfo('新消息 ' + message.targetId + ':' + JSON.stringify(message))
-        }
-    })
-    RongIMClient.connect(token, {
-        onSuccess: function(userId) {
-            console.log('连接成功,用户id：' + userId);
-        },
-        onTokenIncorrect: function() {
-            this.$toast.error('token 无效');
-        },
-        onError: function(errorCode){
-            switch (errorCode) {
-                case RongIMLib.ErrorCode.TIMEOUT:
-                    this.$toast.error('超时');
-                break;
-                case RongIMLib.ConnectionState.UNACCEPTABLE_PAROTOCOL_VERSION:
-                    this.$toast.error('不可接受的协议版本');
-                break;
-                case RongIMLib.ConnectionState.IDENTIFIER_REJECTED:
-                    this.$toast.error('appkey不正确');
-                break;
-                case RongIMLib.ConnectionState.SERVER_UNAVAILABLE:
-                    this.$toast.error('服务器不可用');
-                break;
-            }
-        }
-    },null)
-}
+RongIMClient.init('8w7jv4qb836py', null, {
+    protobuf: Protobuf
+})
 export default {
     name:'chat',
     data(){
@@ -111,8 +38,11 @@ export default {
             errorImg: require('../../assets/img/newfriend.png'),
             appkey: '8w7jv4qb836py',
             token: localStorage.getItem('RcToken'),
+            // RongIMLib : require('../../../static/js/RongIMLib-2.5.0.js'),  // RongIMLib 相对路径
+            // Protobuf : require('../../../static/js/protobuf-2.3.5.min.js'),  // protobuf 相对路径
+            // RongIMClient : RongIMLib.RongIMClient,
             navi: '',
-            showDatas: []
+            showDatas: [],
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -137,20 +67,6 @@ export default {
                 console.log(res);
             })
         },
-
-        addPromptInfo: function (prompt) {
-            this.showDatas.push(prompt)
-        },
-        init: function () {
-            var appkey = this.appkey;
-            var token = this.token;
-            if (!appkey || !token) {
-                this.$toast.warning('appkey 和 token 不能为空')
-            } else {
-                init({appkey: appkey,token: token,navi: this.navi}, this.addPromptInfo)
-            }
-        },
-
         formatTime:function(number,format){
             var formateArr = ['Y','M','D','h','m','s'];
             var returnArr = [];
@@ -177,7 +93,8 @@ export default {
     // html加载完成之后执行
     mounted(){
         this.getChatList();
-        this.init(); //初始化融云,并连接融云服务器
+        RongIMLib.RongIMClient.init(this.appkey);
+        
     },
 }
 </script>

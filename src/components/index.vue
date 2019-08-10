@@ -64,7 +64,7 @@ export default {
                                     localStorage.setItem('RcToken',res.data.rcToken);
                                     setTimeout(() => {
                                         this.changePage('/chat', {})
-                                    }, 1200);
+                                    }, 600);
                                 }else{
                                     this.$toast.warning('未获取到融云token');
                                 }
