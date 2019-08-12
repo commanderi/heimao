@@ -21,6 +21,7 @@
     </div>
 </template>
 <script>
+// https://docs.rongcloud.cn/im/imlib/web/conversation/structure/
 import { login,getRcToken } from '@/http/api'
 export default {
     name: 'index',
@@ -35,7 +36,7 @@ export default {
                 { validate: (val) => val.length >= 6 && val.length <= 10, message: '密码长度大于6小于10'}
             ],
             validateForm: {
-                mobile: '18280231690',
+                mobile: '', //发:18280231690  //收:17716105309
                 password: '123456',
             },
         }

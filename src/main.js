@@ -33,10 +33,26 @@ Vue.use(Toast,{
     warningIcon: '',     // 提醒信息图标
     errorIcon: '' 
 });
-Vue.use(Message);
+Vue.use(Message,{
+    successIcon: '',                    // 成功图标
+    infoIcon: '',                               // 信息图标
+    warningIcon: '',                   // 提醒图标
+    errorIcon: '',                           // 错误图标
+    iconSize: 24,                                   // 图标大小
+    width: 350,                                     // 对话框的宽度
+    maxWidth: '80%',                                // 对话框最大宽度
+    className: '',                                  // 对话框的样式
+    okLabel: '重新登录',                                 // 对话框确定按钮文字
+    cancelLabel: '取消',                             // 对话框取消按钮文字
+    transition: 'scale'                             // 对话框显示的动画 'slide-left', 'slide-right', 'fade', 'scale'
+  });
 Vue.use(Loading);
-/* eslint-disable no-new */
 
+var RongIMLib = require('../static/js/RongIMLib-2.5.0.js');  // RongIMLib 相对路径
+var Protobuf = require('../static/js/protobuf-2.3.5.min.js');  // protobuf 相对路径
+var RongIMClient = RongIMLib.RongIMClient;
+Vue.use(RongIMClient);
+/* eslint-disable no-new */
 // 全局切换页面
 Vue.prototype.changePage = (path,query) => {
     switch (query) {

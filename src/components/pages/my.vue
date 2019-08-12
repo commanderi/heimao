@@ -4,7 +4,7 @@
             <app-head></app-head>
             <div class="con">
                 <p class="u_id">昵称：一号客服</p>
-                <button class="tuichu">退出登录</button>
+                <button class="tuichu" v-on:click="signOut">退出登录</button>
             </div>
             <app-nav></app-nav>
         </div>
@@ -23,7 +23,13 @@ export default {
     // watch是去监听一个值的变化，然后执行相对应的函数
     watch:{},
     // 事件方法执行
-    methods:{},
+    methods:{
+        signOut:function(){
+            // RongIMClient.getInstance().disconnect(); //断开连接
+            RongIMClient.getInstance().logout(); //退出登录
+            this.changePage('/', {})
+        }
+    },
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
     // html加载完成之后执行
