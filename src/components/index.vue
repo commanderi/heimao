@@ -36,7 +36,7 @@ export default {
                 { validate: (val) => val.length >= 6 && val.length <= 10, message: '密码长度大于6小于10'}
             ],
             validateForm: {
-                mobile: '', //发:18280231690  //收:17716105309
+                mobile: '',//收:17716105309 //发:18280231690
                 password: '123456',
             },
         }
@@ -90,7 +90,6 @@ export default {
     created(){},
     // html加载完成之后执行
     mounted(){},
-    
 }
 </script>
 <style>

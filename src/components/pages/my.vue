@@ -2,8 +2,12 @@
     <div class="index">
         <div class="index_x">
             <app-head></app-head>
-            <div class="con">
-                <p class="u_id">昵称：一号客服</p>
+            <div class="con uesrcon" v-if="userInfo!=null">
+                <div class="userImg"><img :src="userInfo.image"></div>
+                <p>昵称：{{ userInfo.nickname }}</p>
+                <p>账号：{{ userInfo.mobile }}</p>
+                <p>性别：{{ userInfo.sex==1 ? '男' : '女' }}</p>
+                <p>账户类型：{{ userInfo.identity==1 ? '用户' : '主播' }}</p>
                 <button class="tuichu" v-on:click="signOut">退出登录</button>
             </div>
             <app-nav></app-nav>
@@ -11,10 +15,13 @@
     </div>
 </template>
 <script>
+import { ucenter } from '@/http/api';
 export default {
     name:'my',
     data(){
-        return{}
+        return{
+            userInfo:null,
+        }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
     computed:{},
@@ -33,7 +40,19 @@ export default {
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
     // html加载完成之后执行
-    mounted(){},
+    mounted(){
+        getucenter:{
+            const loading = this.$loading();
+            ucenter().then(res => {
+                loading.close();
+                if(res.code==1){
+                    this.userInfo = res.data;
+                }else{
+                    this.$toast.warning(res.msg);
+                }
+            })
+        }
+    },
 }
 </script>
 

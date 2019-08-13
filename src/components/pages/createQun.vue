@@ -7,17 +7,16 @@
         </div>
         <div class="add_con">
             <div class="serech">
-                <input type="text" placeholder="请输入用户ID" v-on:keyup.enter="changePage('/friendInfo',{'status':true})">
+                <input type="text" placeholder="请输入用户ID">
             </div>
             <div class="createQun">
                 <ul>
-                    <li v-for="(d,i) in 20" :key="i">
-                        <span><img src="../../assets/img/qrCode.png"></span>
+                    <li v-for="(d,i) in list" :key="i">
+                        <span><img :src="d.image"></span>
                         <span>
-                            <p>新疆阿达西</p>
-                            <mu-flex class="select-control-row">
-                                <mu-checkbox v-model="checkbox" color='#FF2741'></mu-checkbox>
-                            </mu-flex>
+                            <p>{{ d.nickname }}</p>
+                            <!-- <input type="checkbox" class="xuanz"> -->
+                            <input type="checkbox" class="xuanz" v-on:click="CheckItem(d.id)">
                         </span>
                     </li>
                 </ul>
@@ -26,11 +25,14 @@
     </div>
 </template>
 <script>
+import { friendList } from '@/http/api'
 export default {
     name:'createQun',
     data(){
         return{
-            checkbox:false
+            checkbox:false,
+            list:null,
+            numArr:[],
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -40,12 +42,32 @@ export default {
     // watch是去监听一个值的变化，然后执行相对应的函数
     watch:{},
     // 事件方法执行
-    methods:{},
+    methods:{
+        CheckItem:function(id){
+            if(this.numArr.indexOf(id)===-1){
+                this.numArr.push(id);
+            }else{
+                this.numArr.splice(this.numArr.findIndex(item=>item.id===id),1);
+            }
+            console.log(this.numArr)
+        }
+    },
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
     // html加载完成之后执行
     mounted(){
-
+        getFriendList:{
+            const loading = this.$loading();
+            friendList().then(res => {
+                loading.close();
+                if(res.code==1){
+                    this.list = res.data.list;
+                    console.log(res.data.list);
+                }else{
+                    this.$toast.error(res.msg);
+                }
+            })
+        }
     },
 }
 </script>

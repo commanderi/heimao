@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="title">
-            <span v-on:click="changePage($router.back(-1))"><i class="iconfont icon-fanhui"></i></span>
-            <span style="font-size:16px">{{ userId }}</span>
+            <span v-on:click="changePage('/chat')"><i class="iconfont icon-fanhui"></i></span>
+            <span style="font-size:16px">{{ u_name }}</span>
             <span><i class="iconfont icon-diandiandian"></i></span>
         </div>
         <div class="add_con liao">
@@ -23,7 +23,8 @@ export default {
             appkey: '8w7jv4qb836py',
             RcToken: localStorage.getItem('RcToken'),
             msg:'',
-            userId:null
+            u_id:null,
+            u_name:null,
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -46,7 +47,7 @@ export default {
                 },
             });
             var conversationType = RongIMLib.ConversationType.PRIVATE;
-            var targetId = '45';  // 目标 Id
+            var targetId = this.u_id;  // 目标 Id
             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
                 onSuccess: function (message) {
                     console.log('发送消息成功, 信息为: ', message.content);
@@ -62,6 +63,8 @@ export default {
     created(){},
     // html加载完成之后执行
     mounted(){
+        this.u_id = this.$route.query.id;
+        this.u_name = this.$route.query.name;
         const me = this;
         RongIMLib.RongIMClient.init(this.appkey);
         RongIMClient.connect(this.RcToken, {

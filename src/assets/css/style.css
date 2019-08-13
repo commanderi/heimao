@@ -107,6 +107,7 @@ textarea{resize:none;}
     height: 100%;
     /* height: auto; */
     border-radius: 4px;
+    overflow: hidden;
 }
 .qunxiangxi{
     border-bottom: 1px solid #D9D9D9;
@@ -160,7 +161,7 @@ textarea{resize:none;}
     display: flex;
     justify-content: center;
     align-items: center;
-    /* margin-top: 4px; */
+    margin: 6px 0;
 }
 .userInput>input{
     width: 80%;
@@ -178,6 +179,8 @@ textarea{resize:none;}
 .serechSuccess>div>img{
     width: 100%;
     height: 100%;
+    min-width: 72px;
+    min-height: 72px;
     border-radius: 4px;
     overflow: hidden;
 }
@@ -245,6 +248,8 @@ textarea{resize:none;}
 .youBox>ul>li>span>img{
     width: 100%;
     height: 100%;
+    min-width: 56px;
+    min-height: 56px;
     border-radius: 4px;
     overflow: hidden;
 }
@@ -341,6 +346,8 @@ textarea{resize:none;}
     width: 100%;
     height: 100%;
     padding: 8px;
+    min-width: 72px;
+    min-height: 72px;
     overflow: hidden;
     border-radius: 12px;
 }
@@ -403,9 +410,27 @@ textarea{resize:none;}
     color: #fff;
     font-size: 16px;
 }
-
-
-
+.userImg{
+    display: flex;
+    justify-content: center;
+    margin: 25px 0 10px 0;
+}
+.userImg>img{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.uesrcon>p{
+    text-align: center;
+    padding-top: 15px;
+    color: #FF2741;
+    font-size: 16px;
+}
+.xuanz{
+    width: 22px;
+    height: 22px;
+}
 
 
 

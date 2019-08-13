@@ -13,12 +13,9 @@
                     </li>
                 </ul>
                 <ul class="list_box">
-                    <li v-for="(d,i) in 20" :key="i" v-on:click="changePage('/friendInfo',{'status':false})">
-                        <div class="quntouxiang"><img src="../../assets/img/4654.png"></div>
-                        <div class="qunxiangxi">
-                            <p><span>叶落浮生</span><i>14:12</i></p>
-                            <p class="qunmsg">还在测试中呢</p>
-                        </div>
+                    <li v-for="(d,i) in list" :key="i" v-on:click="changePage('/friendInfo',{'id':d.id,'name':d.nickname,'image':d.image})">
+                        <div class="quntouxiang"><img :src="d.image"></div>
+                        <div class="qunxiangxi"><p><span>{{ d.nickname }}</span></p></div>
                     </li>
                 </ul>
             </div>
@@ -27,10 +24,13 @@
     </div>
 </template>
 <script>
+import { friendList } from '@/http/api'
 export default {
     name:'friend',
     data(){
-        return{}
+        return{
+            list:null,
+        }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
     computed:{},
@@ -43,7 +43,19 @@ export default {
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
     // html加载完成之后执行
-    mounted(){},
+    mounted(){
+        getFriendList:{
+            const loading = this.$loading();
+            friendList().then(res => {
+                loading.close();
+                if(res.code==1){
+                    this.list = res.data.list;
+                }else{
+                    this.$toast.warning(res.msg);
+                }
+            })
+        }
+    },
 }
 </script>
 

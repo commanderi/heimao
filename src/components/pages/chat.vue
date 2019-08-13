@@ -5,7 +5,7 @@
             <div class="con">
                 <div class="serech"><input type="text" placeholder="请输入群名称" v-model="userId"></div>
                 <ul class="list_box">
-                    <li v-for="(d,i) in chatroomList" :key="i" v-on:click="changePage('/boast',{})">
+                    <li v-for="(d,i) in chatroomList" :key="i" v-on:click="changePage('/boast',{'id':d.user_id,'name':d.name})">
                         <div class="quntouxiang"><img :src="d.image"></div>
                         <div class="qunxiangxi">
                             <p><span>{{ d.name }}</span><i>{{ formatTime(d.record_time,'M-D h:m:s') }}</i></p>
@@ -47,12 +47,32 @@ export default {
                 loading.close();
                 if(res.code==1){
                     this.chatroomList = res.data.list;
+                    console.log(res.data.list)
                 }else{
-                    this.$toast.warning(res.msg);
+                    this.$toast.error(res.msg);
                 }
                 // console.clear();
                 // console.log(res);
             })
+        },
+        chonglian:function(){
+            var callback = {
+                onSuccess: function(userId) {
+                    console.log('reconnect success. ' + userId);
+                },
+                onTokenIncorrect: function() {
+                    console.log('token 无效');
+                },
+                onError: function(errorCode) {
+                    console.log(errorcode);
+                }
+            };
+            var config = {
+                auto: true,
+                url: 'cdn.ronghub.com/RongIMLib-2.2.6.min.js?d=' + Date.now(),
+                rate: [100, 1000, 3000, 6000, 10000]
+            };
+            RongIMClient.reconnect(callback, config);
         },
         getList:function(){
             var conversationTypes = [ RongIMLib.ConversationType.PRIVATE ];
@@ -153,6 +173,7 @@ export default {
                     break;
                     case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
                         console.log('网络不可用, 此时可调用 reconnect 进行重连');
+                        me.chonglian();
                     break;
                     default:
                         console.log('连接状态为', status);
