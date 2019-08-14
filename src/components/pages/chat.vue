@@ -3,13 +3,20 @@
         <div class="index_x">
             <app-head></app-head>
             <div class="con">
-                <div class="serech"><input type="text" placeholder="请输入群名称" v-model="userId"></div>
+                <div class="serech"><input type="text" placeholder="请输入群名称"></div>
                 <ul class="list_box">
-                    <li v-for="(d,i) in chatroomList" :key="i" v-on:click="changePage('/boast',{'id':d.user_id,'name':d.name})">
+                    <!-- <li v-for="(d,i) in chatroomList" :key="i" v-on:click="changePage('/boast',{'id':d.user_id,'name':d.name})">
                         <div class="quntouxiang"><img :src="d.image"></div>
                         <div class="qunxiangxi">
                             <p><span>{{ d.name }}</span><i>{{ formatTime(d.record_time,'M-D h:m:s') }}</i></p>
-                            <p class="qunmsg">{{ receiveMsg }}</p>
+                        </div>
+                    </li> -->
+                    <li v-for="(d,i) in receiveMsg" :key="i" v-on:click="changePage('/boast',{'id':d.targetId,'name':d.latestMessage.content.user.name})">
+                        <div class="quntouxiang"><img :src="d.latestMessage.content.user.portrait"></div>
+                        <div class="qunxiangxi">
+                            <!-- formatTime(d.latestMessage.receivedTime,'h:m:s') -->
+                            <p><span>{{ d.latestMessage.content.user.name }}</span><i>{{ formatTime(parseInt(d.latestMessage.receivedTime/1000),'M-D h:m:s') }}</i></p>
+                            <p class="qunmsg">{{ d.latestMessage.content.content }}</p>
                         </div>
                     </li>
                 </ul>
@@ -28,8 +35,7 @@ export default {
             errorImg: require('../../assets/img/newfriend.png'),
             appkey: '8w7jv4qb836py',
             RcToken: localStorage.getItem('RcToken'),
-            receiveMsg:'',
-            userId:null,
+            receiveMsg: null,
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -37,7 +43,9 @@ export default {
     // components是声明组件
     components:{},
     // watch是去监听一个值的变化，然后执行相对应的函数
-    watch:{},
+    watch:{
+        '$route':'getList'
+    },
     // 事件方法执行
     methods:{
         // 获取聊天室列表
@@ -47,18 +55,17 @@ export default {
                 loading.close();
                 if(res.code==1){
                     this.chatroomList = res.data.list;
-                    console.log(res.data.list)
                 }else{
                     this.$toast.error(res.msg);
                 }
-                // console.clear();
-                // console.log(res);
+                this.getList();
             })
         },
+        // 重新连接
         chonglian:function(){
-            var callback = {
+            let callback = {
                 onSuccess: function(userId) {
-                    console.log('reconnect success. ' + userId);
+                    console.log('重连成功,用户id:' + userId);
                 },
                 onTokenIncorrect: function() {
                     console.log('token 无效');
@@ -67,20 +74,23 @@ export default {
                     console.log(errorcode);
                 }
             };
-            var config = {
+            let config = {
                 auto: true,
                 url: 'cdn.ronghub.com/RongIMLib-2.2.6.min.js?d=' + Date.now(),
                 rate: [100, 1000, 3000, 6000, 10000]
             };
             RongIMClient.reconnect(callback, config);
         },
+        // 获取会话列表
         getList:function(){
-            var conversationTypes = [ RongIMLib.ConversationType.PRIVATE ];
-            var count = 150;
+            const me = this;
+            let conversationTypes = [ RongIMLib.ConversationType.PRIVATE ];
+            let count = 150;
             RongIMClient.getInstance().getConversationList({
                 onSuccess: function(list) {
                     console.log('获取会话列表成功', list);
-                    // this.receiveMsg = list;
+                    me.receiveMsg = list;
+                    // me.$set(me.receiveMsg,0,list);
                 },
                 onError: function(error) {
                     console.log('获取会话列表失败', error);
@@ -117,7 +127,6 @@ export default {
         RongIMLib.RongIMClient.init(this.appkey);
         RongIMClient.connect(this.RcToken, {
             onSuccess: function(userId) {
-                me.userId = userId;
                 console.log('连接成功,用户id为:', userId);// 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
                 me.getList();
             },
@@ -162,9 +171,9 @@ export default {
                         me.$confirm('其他设备登录,本端已下线', '提示')
                         .then(({ result }) => {
                             if (result) {
-                                console.log(result+'*')
-                            } else {
                                 me.changePage('/', {})
+                            } else {
+                                console.log(result)
                             }
                         });
                     break;
@@ -185,12 +194,11 @@ export default {
             // 接收到的消息
             onReceived: function (message) {
                 me.getList();
-                var messageContent = message.content;
+                let messageContent = message.content;
                 // 判断消息类型
                 switch(message.messageType) {
                     case RongIMClient.MessageType.TextMessage: // 文字消息
-                        console.log('文字消息：', messageContent.content);
-                        me.receiveMsg = messageContent.content;
+                        // console.log('文字消息：', messageContent.content);
                     break;
                     case RongIMClient.MessageType.ImageMessage: // 图片消息
                         console.log('图片缩略图 base64', messageContent.content); 
@@ -215,6 +223,7 @@ export default {
                 }
             }
         });
+        
     },
 }
 </script>

@@ -3,7 +3,7 @@
         <div class="title">
             <span v-on:click="changePage($router.back(-1))"><i class="iconfont icon-fanhui"></i></span>
             <span style="padding-left:28px">发起群聊</span>
-            <span class="iconfont"><button class="queding">确定</button></span>
+            <span class="iconfont"><button class="queding" v-on:click="createQun">确定</button></span>
         </div>
         <div class="add_con">
             <div class="serech">
@@ -15,7 +15,6 @@
                         <span><img :src="d.image"></span>
                         <span>
                             <p>{{ d.nickname }}</p>
-                            <!-- <input type="checkbox" class="xuanz"> -->
                             <input type="checkbox" class="xuanz" v-on:click="CheckItem(d.id)">
                         </span>
                     </li>
@@ -25,7 +24,7 @@
     </div>
 </template>
 <script>
-import { friendList } from '@/http/api'
+import { friendList,createChat } from '@/http/api'
 export default {
     name:'createQun',
     data(){
@@ -49,8 +48,28 @@ export default {
             }else{
                 this.numArr.splice(this.numArr.findIndex(item=>item.id===id),1);
             }
-            console.log(this.numArr)
-        }
+        },
+        // 创建群
+        createQun:function(){
+            if(this.numArr.length<1){
+                this.$toast.error('请选择要拉进群的好友');
+            }else{
+                let arr = '';
+                for (let i = 0; i < this.numArr.length; i++) {
+                    arr += this.numArr[i]+',';
+                }
+                arr = arr.substring(0,arr.length-1);
+                const loading = this.$loading();
+                createChat({'ids':arr}).then(res => {
+                    loading.close();
+                    if(res.code==1){
+                        this.list = res.data.list;
+                    }else{
+                        this.$toast.error(res.msg);
+                    }
+                })
+            }
+        },
     },
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
@@ -62,7 +81,6 @@ export default {
                 loading.close();
                 if(res.code==1){
                     this.list = res.data.list;
-                    console.log(res.data.list);
                 }else{
                     this.$toast.error(res.msg);
                 }

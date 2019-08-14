@@ -11,7 +11,7 @@
         <div class="liao_botton">
             <button><i class="iconfont icon-tupian"></i></button>
             <textarea class="text" v-model="msg"></textarea>
-            <button v-on:click="seen(msg)">发送</button>
+            <button v-on:click="seen(msg)" v-on:keyup.enter="seen(msg)">发送</button>
         </div>
     </div>
 </template>
@@ -35,19 +35,19 @@ export default {
     watch:{},
     // 事件方法执行
     methods:{
-        
+        // 发送消息
         seen:function(data){
             const me = this;
-            var msg = new RongIMLib.TextMessage({
+            let msg = new RongIMLib.TextMessage({
                 content: data,
-                user : { // 当前用户(发送者) 信息
-                    "id" : "33",
-                    "name" : "张三",
-                    "portrait" : "https://cdn.ronghub.com/thinking-face.png"
+                user : {
+                    'id': me.u_id,
+                    'name': localStorage.getItem('userNickname'),
+                    "portrait": "https://cdn.ronghub.com/thinking-face.png"
                 },
             });
-            var conversationType = RongIMLib.ConversationType.PRIVATE;
-            var targetId = this.u_id;  // 目标 Id
+            let conversationType = RongIMLib.ConversationType.PRIVATE;
+            let targetId = this.u_id;  // 目标 Id
             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
                 onSuccess: function (message) {
                     console.log('发送消息成功, 信息为: ', message.content);
@@ -57,7 +57,49 @@ export default {
                     console.log('发送消息失败', errorCode);
                 }
             });
-        }
+        },
+        // 获取指定会话
+        getConversation:function(id){
+            let conversationType = RongIMLib.ConversationType.PRIVATE;
+            let targetId = id;
+            RongIMClient.getInstance().getConversation(conversationType, targetId, {
+                onSuccess: function(conversation) {
+                    if (con) {
+                        console.log('获取指定会话成功', conversation);
+                    }
+                }
+            });
+        },
+        // 获取会话列表
+        getList:function(){
+            const me = this;
+            let conversationTypes = [ RongIMLib.ConversationType.PRIVATE ];
+            let count = 150;
+            RongIMClient.getInstance().getConversationList({
+                onSuccess: function(list) {
+                    console.log('获取会话列表成功**', list);
+                },
+                onError: function(error) {
+                    console.log('获取会话列表失败', error);
+                }
+            }, conversationTypes, count);
+        },
+        // 获取历史消息
+        getHistoryMsg:function(){
+            let conversationType = RongIMLib.ConversationType.PRIVATE;
+            let targetId = this.u_id;
+            let timestrap = null; // 默认传 null, 若从头开始获取历史消息, 请赋值为 0
+            let count = 20;
+            RongIMLib.RongIMClient.getInstance().getHistoryMessages(conversationType, targetId, timestrap, count, {
+                onSuccess: function(list, hasMsg) {
+                    console.log('获取历史消息成功', list);
+                },
+                onError: function(error) {
+                    // 请排查：单群聊消息云存储是否开通
+                    console.log('获取历史消息失败', error);
+                }
+            });
+        },
     },
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
@@ -69,8 +111,8 @@ export default {
         RongIMLib.RongIMClient.init(this.appkey);
         RongIMClient.connect(this.RcToken, {
             onSuccess: function(userId) {
-                me.userId = userId;
                 console.log('连接成功,用户id为:', userId);// 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
+                me.getHistoryMsg();
             },
             onTokenIncorrect: function() {
                 console.log('连接失败, 失败原因: token 无效');
@@ -113,9 +155,9 @@ export default {
                         me.$confirm('其他设备登录,本端已下线', '提示')
                         .then(({ result }) => {
                             if (result) {
-                                
-                            } else {
                                 me.changePage('/', {})
+                            } else {
+                                console.log(result);
                             }
                         });
                     break;
@@ -134,7 +176,7 @@ export default {
         RongIMClient.setOnReceiveMessageListener({
             // 接收到的消息
             onReceived: function (message) {
-                var messageContent = message.content;
+                let messageContent = message.content;
                 // 判断消息类型
                 switch(message.messageType) {
                     case RongIMClient.MessageType.TextMessage: // 文字消息

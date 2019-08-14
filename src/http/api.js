@@ -22,7 +22,8 @@ export const addBook = params => { return axios.post('friend/addBook', params).t
 export const delFriend = params => { return axios.post('friend/delFriend', params).then(res => res).catch(err => err) }
 // 邀请加群好友列表
 export const friendLists = params => { return axios.post('chatroom/friendLists', params).then(res => res).catch(err => err) }
-
+// 创建房间
+export const createChat = params => { return axios.post('chatroom/createChat', params).then(res => res).catch(err => err) }
 
 
 

@@ -22,7 +22,7 @@
 </template>
 <script>
 // https://docs.rongcloud.cn/im/imlib/web/conversation/structure/
-import { login,getRcToken } from '@/http/api'
+import { login,getRcToken,ucenter } from '@/http/api'
 export default {
     name: 'index',
     data () {
@@ -49,6 +49,30 @@ export default {
     watch:{},
     // 事件方法执行
     methods:{
+        getucenter:function(){
+            ucenter().then(res => {
+                if(res.code==1){
+                    localStorage.setItem('userNickname',res.data.nickname);
+                }else{
+                    this.$toast.warning(res.msg);
+                }
+            })
+        },
+        getRctoken:function(a){
+            getRcToken().then(res => {
+                a.close();
+                this.$toast.success('登录成功');
+                this.getucenter();
+                if(res.code==1){
+                    localStorage.setItem('RcToken',res.data.rcToken);
+                    setTimeout(() => {
+                        this.changePage('/chat', {})
+                    }, 600);
+                }else{
+                    this.$toast.warning('未获取到融云token');
+                }
+            })
+        },
         submit:function(){
             this.$refs.form.validate().then((result) => {
                 if(!result){
@@ -58,18 +82,7 @@ export default {
                     login(this.validateForm).then(res => {
                         if(res.code==1){
                             localStorage.setItem('token',res.token);
-                            getRcToken().then(res => {
-                                loading.close();
-                                this.$toast.success('登录成功');
-                                if(res.code==1){
-                                    localStorage.setItem('RcToken',res.data.rcToken);
-                                    setTimeout(() => {
-                                        this.changePage('/chat', {})
-                                    }, 600);
-                                }else{
-                                    this.$toast.warning('未获取到融云token');
-                                }
-                            })
+                            this.getRctoken(loading);
                         }else{
                             loading.close();
                             this.$toast.error(res.msg)
