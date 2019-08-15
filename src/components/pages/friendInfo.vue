@@ -14,7 +14,7 @@
                 </div>
             </div>
             <!-- <button class="tianjia" v-if="status==true">添加好友</button> -->
-            <button class="tianjia" v-on:click="changePage('/boast',{'id':$route.query.id,'name':$route.query.name})">发消息</button>
+            <button class="tianjia" v-on:click="changePage('/boast',{'id':$route.query.id,'name':$route.query.name,'image':$route.query.image})">发消息</button>
             <button class="delhy" v-on:click="deleteFriend($route.query.id)">删除好友</button>
         </div>
     </div>

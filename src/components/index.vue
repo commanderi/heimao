@@ -53,21 +53,21 @@ export default {
             ucenter().then(res => {
                 if(res.code==1){
                     localStorage.setItem('userNickname',res.data.nickname);
+                    // localStorage.setItem('userImage',res.data.image);
                 }else{
                     this.$toast.warning(res.msg);
                 }
             })
         },
         getRctoken:function(a){
+            const me = this;
             getRcToken().then(res => {
                 a.close();
                 this.$toast.success('登录成功');
                 this.getucenter();
                 if(res.code==1){
                     localStorage.setItem('RcToken',res.data.rcToken);
-                    setTimeout(() => {
-                        this.changePage('/chat', {})
-                    }, 600);
+                    me.changePage('/all', {})
                 }else{
                     this.$toast.warning('未获取到融云token');
                 }
@@ -105,12 +105,3 @@ export default {
     mounted(){},
 }
 </script>
-<style>
-.mu-demo-form {
-  width: 100%;
-  max-width: 550px;
-}
-.mu-form-item-label,.mu-text-field-input{
-    color: #fff;
-}
-</style>

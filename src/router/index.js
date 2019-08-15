@@ -12,20 +12,25 @@ export default new Router({
             component: index
         },
         {
-            path: '/chat', //跳转后需要显示的组件
-            name: 'chat',
-            component: page('pages/chat') //跳转的组件的路径
+            path: '/all', //跳转后需要显示的组件
+            name: 'all',
+            component: page('all') //跳转的组件的路径
         },
-        {
-            path: '/friend',
-            name: 'friend',
-            component: page('pages/friend')
-        },
-        {
-            path: '/my',
-            name: 'my',
-            component: page('pages/my')
-        },
+        // {
+        //     path: '/chat', //跳转后需要显示的组件
+        //     name: 'chat',
+        //     component: page('pages/chat') //跳转的组件的路径
+        // },
+        // {
+        //     path: '/friend',
+        //     name: 'friend',
+        //     component: page('pages/friend')
+        // },
+        // {
+        //     path: '/my',
+        //     name: 'my',
+        //     component: page('pages/my')
+        // },
         {
             path: '/addFriend',
             name: 'addFriend',

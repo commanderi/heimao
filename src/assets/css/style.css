@@ -390,6 +390,7 @@ textarea{resize:none;}
     padding: 10px 2%;
     border-radius: 4px;
     line-height: 1.2;
+    border: 1px solid #ccc;
     font-size: 16px;
     display: flex;
     background-color: #fff;
@@ -431,7 +432,13 @@ textarea{resize:none;}
     width: 22px;
     height: 22px;
 }
-
+.mu-demo-form {
+    width: 100%;
+    max-width: 550px;
+}
+.mu-form-item-label,.mu-text-field-input{
+    color: #fff;
+}
 
 
 

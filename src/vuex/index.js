@@ -5,14 +5,16 @@ const store = new Vuex.Store({
     // state主要是设置默认数据
     state: {
         token:'',
+        msg:'',
+        navStatus:1,
         // requestUrl:'http://api.7ib78kg.cn/',
         // postUrl:'api/',
     },
     // mutations主要是修改store存储的值(同步)
     mutations: {
-        loginSuccess(state){
-            state.token = state;
-        }
+        increment(state,data){
+            state.msg = data;
+        },
     },
     // actions是异步的
     actions: {

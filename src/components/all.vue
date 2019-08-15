@@ -1,41 +1,23 @@
 <template>
-    <div class="index">
-        <div class="index_x">
-            <app-head></app-head>
-            <div class="con">
-                <div class="serech"><input type="text" placeholder="请输入群名称"></div>
-                <ul class="list_box">
-                    <!-- <li v-for="(d,i) in chatroomList" :key="i" v-on:click="changePage('/boast',{'id':d.user_id,'name':d.name})">
-                        <div class="quntouxiang"><img :src="d.image"></div>
-                        <div class="qunxiangxi">
-                            <p><span>{{ d.name }}</span><i>{{ formatTime(d.record_time,'M-D h:m:s') }}</i></p>
-                        </div>
-                    </li> -->
-                    <li v-for="(d,i) in receiveMsg" :key="i" v-on:click="changePage('/boast',{'id':d.targetId,'name':d.latestMessage.content.user.name})">
-                        <div class="quntouxiang"><img :src="d.latestMessage.content.user.portrait"></div>
-                        <div class="qunxiangxi">
-                            <!-- formatTime(d.latestMessage.receivedTime,'h:m:s') -->
-                            <p><span>{{ d.latestMessage.content.user.name }}</span><i>{{ formatTime(parseInt(d.latestMessage.receivedTime/1000),'M-D h:m:s') }}</i></p>
-                            <p class="qunmsg">{{ d.latestMessage.content.content }}</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <app-nav></app-nav>
-        </div>
+<div class="index">
+    <div class="index_x">
+        <app-head></app-head>
+
+        <app-chat v-if="this.$store.state.navStatus==1"></app-chat>
+        <app-friend v-if="this.$store.state.navStatus==2"></app-friend>
+        <app-my v-if="this.$store.state.navStatus==3"></app-my>
+
+        <app-nav></app-nav>
     </div>
+</div>
 </template>
 <script>
-import { chatroom } from '@/http/api';
 export default {
-    name:'chat',
+    name:'all',
     data(){
         return{
-            chatroomList: null,
-            errorImg: require('../../assets/img/newfriend.png'),
             appkey: '8w7jv4qb836py',
             RcToken: localStorage.getItem('RcToken'),
-            receiveMsg: null,
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -43,92 +25,18 @@ export default {
     // components是声明组件
     components:{},
     // watch是去监听一个值的变化，然后执行相对应的函数
-    watch:{
-        '$route':'getList'
-    },
+    watch:{},
     // 事件方法执行
-    methods:{
-        // 获取聊天室列表
-        getChatList:function(){
-            const loading = this.$loading();
-            chatroom().then(res => {
-                loading.close();
-                if(res.code==1){
-                    this.chatroomList = res.data.list;
-                }else{
-                    this.$toast.error(res.msg);
-                }
-                this.getList();
-            })
-        },
-        // 重新连接
-        chonglian:function(){
-            let callback = {
-                onSuccess: function(userId) {
-                    console.log('重连成功,用户id:' + userId);
-                },
-                onTokenIncorrect: function() {
-                    console.log('token 无效');
-                },
-                onError: function(errorCode) {
-                    console.log(errorcode);
-                }
-            };
-            let config = {
-                auto: true,
-                url: 'cdn.ronghub.com/RongIMLib-2.2.6.min.js?d=' + Date.now(),
-                rate: [100, 1000, 3000, 6000, 10000]
-            };
-            RongIMClient.reconnect(callback, config);
-        },
-        // 获取会话列表
-        getList:function(){
-            const me = this;
-            let conversationTypes = [ RongIMLib.ConversationType.PRIVATE ];
-            let count = 150;
-            RongIMClient.getInstance().getConversationList({
-                onSuccess: function(list) {
-                    console.log('获取会话列表成功', list);
-                    me.receiveMsg = list;
-                    // me.$set(me.receiveMsg,0,list);
-                },
-                onError: function(error) {
-                    console.log('获取会话列表失败', error);
-                }
-            }, conversationTypes, count);
-        },
-        formatTime:function(number,format){
-            var formateArr = ['Y','M','D','h','m','s'];
-            var returnArr = [];
-            var date = new Date(number * 1000);
-            returnArr.push(date.getFullYear());
-            returnArr.push(this.formatNumber(date.getMonth() + 1));
-            returnArr.push(this.formatNumber(date.getDate()));
-            returnArr.push(this.formatNumber(date.getHours()));
-            returnArr.push(this.formatNumber(date.getMinutes()));
-            returnArr.push(this.formatNumber(date.getSeconds()));
-            for (var i in returnArr){
-                format = format.replace(formateArr[i], returnArr[i]);
-            }
-            return format;
-        },
-        //数据转化
-        formatNumber:function(n){
-            n = n.toString();
-            return n[1] ? n : '0' + n;
-        }
-    },
+    methods:{},
     // html加载完成之前执行,执行顺序：父组件-子组件
     created(){},
     // html加载完成之后执行
     mounted(){
-        const me = this;
-        this.getChatList();
         RongIMLib.RongIMClient.init(this.appkey);
+        // 状态监听器
         RongIMClient.connect(this.RcToken, {
             onSuccess: function(userId) {
                 console.log('连接成功,用户id为:', userId);// 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
-                me.getList();
             },
             onTokenIncorrect: function() {
                 console.log('连接失败, 失败原因: token 无效');
@@ -153,6 +61,7 @@ export default {
                 }
             }
         });
+        // 连接融云
         RongIMClient.setConnectionStatusListener({
             onChanged: function (status) {
                 // status 标识当前连接状态
@@ -168,21 +77,12 @@ export default {
                     break;
                     case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
                         console.log('其他设备登录, 本端被踢');
-                        me.$confirm('其他设备登录,本端已下线', '提示')
-                        .then(({ result }) => {
-                            if (result) {
-                                me.changePage('/', {})
-                            } else {
-                                console.log(result)
-                            }
-                        });
                     break;
                     case RongIMLib.ConnectionStatus.DOMAIN_INCORRECT:
                         console.log('域名不正确, 请至开发者后台查看安全域名配置');
                     break;
                     case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
                         console.log('网络不可用, 此时可调用 reconnect 进行重连');
-                        me.chonglian();
                     break;
                     default:
                         console.log('连接状态为', status);
@@ -190,15 +90,16 @@ export default {
                 }
             }
         });
+        // 消息监听器
         RongIMClient.setOnReceiveMessageListener({
             // 接收到的消息
             onReceived: function (message) {
-                me.getList();
                 let messageContent = message.content;
                 // 判断消息类型
+                // this.$store.commit('increment',message.content)
                 switch(message.messageType) {
                     case RongIMClient.MessageType.TextMessage: // 文字消息
-                        // console.log('文字消息：', messageContent.content);
+                        console.log('文字消息：', messageContent.content);
                     break;
                     case RongIMClient.MessageType.ImageMessage: // 图片消息
                         console.log('图片缩略图 base64', messageContent.content); 
@@ -223,8 +124,6 @@ export default {
                 }
             }
         });
-        
     },
 }
 </script>
-

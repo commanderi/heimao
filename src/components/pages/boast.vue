@@ -2,7 +2,7 @@
     <div>
         <div class="title">
             <span v-on:click="changePage('/chat')"><i class="iconfont icon-fanhui"></i></span>
-            <span style="font-size:16px">{{ u_name }}</span>
+            <span style="font-size:16px">{{ target_name }}</span>
             <span><i class="iconfont icon-diandiandian"></i></span>
         </div>
         <div class="add_con liao">
@@ -16,15 +16,18 @@
     </div>
 </template>
 <script>
+import { userInfo } from '@/http/api';
 export default {
     name:'boast',
     data(){
         return{
             appkey: '8w7jv4qb836py',
             RcToken: localStorage.getItem('RcToken'),
+            send_name:localStorage.getItem('userNickname'),
+            // send_img:localStorage.getItem('userImage'),
+            target_id:this.$route.query.id,
+            target_name:this.$route.query.name,
             msg:'',
-            u_id:null,
-            u_name:null,
         }
     },
     // computed是计算属性，也就是依赖其它的属性计算所得出最后的值
@@ -35,22 +38,34 @@ export default {
     watch:{},
     // 事件方法执行
     methods:{
+        // 获取指定用户信息
+        getUserInfo:function(id){
+            userInfo({'id':id}).then(res => {
+                if(res.code==1){
+                    console.log(res.data);
+                }else{
+                    this.$toast.warning(res.msg);
+                }
+            })
+        },
         // 发送消息
         seen:function(data){
             const me = this;
             let msg = new RongIMLib.TextMessage({
                 content: data,
                 user : {
-                    'id': me.u_id,
-                    'name': localStorage.getItem('userNickname'),
+                    'sendName': me.send_name,
+                    // 'sendImage':me.send_img,
+                    'targetId': me.target_id,
+                    'targetName': me.target_name,
                     "portrait": "https://cdn.ronghub.com/thinking-face.png"
                 },
             });
             let conversationType = RongIMLib.ConversationType.PRIVATE;
-            let targetId = this.u_id;  // 目标 Id
+            let targetId = this.target_id;  // 目标 Id
             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
                 onSuccess: function (message) {
-                    console.log('发送消息成功, 信息为: ', message.content);
+                    console.log('发送消息成功, 信息为: ', message.content.content);
                     me.msg = '';
                 },
                 onError: function (errorCode) {
@@ -87,7 +102,7 @@ export default {
         // 获取历史消息
         getHistoryMsg:function(){
             let conversationType = RongIMLib.ConversationType.PRIVATE;
-            let targetId = this.u_id;
+            let targetId = this.target_id;
             let timestrap = null; // 默认传 null, 若从头开始获取历史消息, 请赋值为 0
             let count = 20;
             RongIMLib.RongIMClient.getInstance().getHistoryMessages(conversationType, targetId, timestrap, count, {
@@ -105,106 +120,7 @@ export default {
     created(){},
     // html加载完成之后执行
     mounted(){
-        this.u_id = this.$route.query.id;
-        this.u_name = this.$route.query.name;
         const me = this;
-        RongIMLib.RongIMClient.init(this.appkey);
-        RongIMClient.connect(this.RcToken, {
-            onSuccess: function(userId) {
-                console.log('连接成功,用户id为:', userId);// 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
-                me.getHistoryMsg();
-            },
-            onTokenIncorrect: function() {
-                console.log('连接失败, 失败原因: token 无效');
-            },
-            onError: function(errorCode) {
-                switch (errorCode) {
-                    case RongIMLib.ErrorCode.TIMEOUT:
-                        console.log('连接超时');
-                    break;
-                    case RongIMLib.ConnectionState.UNACCEPTABLE_PAROTOCOL_VERSION:
-                        console.log('不可接受的协议版本');
-                    break;
-                    case RongIMLib.ConnectionState.IDENTIFIER_REJECTED:
-                        console.log('appkey 不正确');
-                    break;
-                    case RongIMLib.ConnectionState.SERVER_UNAVAILABLE:
-                        console.log('服务器不可用');
-                    break;
-                    default:
-                        console.log('连接失败, 失败原因: ', info);
-                    break;
-                }
-            }
-        });
-        RongIMClient.setConnectionStatusListener({
-            onChanged: function (status) {
-                // status 标识当前连接状态
-                switch (status) {
-                    case RongIMLib.ConnectionStatus.CONNECTED:
-                        console.log('连接成功');
-                    break;
-                    case RongIMLib.ConnectionStatus.CONNECTING:
-                        console.log('正在连接');
-                    break;
-                    case RongIMLib.ConnectionStatus.DISCONNECTED:
-                        console.log('断开连接');
-                    break;
-                    case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
-                        console.log('其他设备登录, 本端被踢');
-                        me.$confirm('其他设备登录,本端已下线', '提示')
-                        .then(({ result }) => {
-                            if (result) {
-                                me.changePage('/', {})
-                            } else {
-                                console.log(result);
-                            }
-                        });
-                    break;
-                    case RongIMLib.ConnectionStatus.DOMAIN_INCORRECT:
-                        console.log('域名不正确, 请至开发者后台查看安全域名配置');
-                    break;
-                    case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
-                        console.log('网络不可用, 此时可调用 reconnect 进行重连');
-                    break;
-                    default:
-                        console.log('连接状态为', status);
-                    break;
-                }
-            }
-        });
-        RongIMClient.setOnReceiveMessageListener({
-            // 接收到的消息
-            onReceived: function (message) {
-                let messageContent = message.content;
-                // 判断消息类型
-                switch(message.messageType) {
-                    case RongIMClient.MessageType.TextMessage: // 文字消息
-                        console.log('文字内容', messageContent.content);
-                    break;
-                    case RongIMClient.MessageType.ImageMessage: // 图片消息
-                        console.log('图片缩略图 base64', messageContent.content); 
-                        console.log('原图 url', messageContent.imageUri);
-                    break;
-                    case RongIMClient.MessageType.HQVoiceMessage: // 音频消息
-                        console.log('音频 type ', messageContent.type); // 编解码类型，默认为 aac 音频
-                        console.log('音频 url', messageContent.remoteUrl); // 播放：<audio src={remoteUrl} />
-                        console.log('音频 时长', messageContent.duration);
-                    break;
-                    case RongIMClient.MessageType.RichContentMessage: // 富文本(图文)消息
-                        console.log('文本内容', messageContent.content);
-                        console.log('图片 base64', messageContent.imageUri);
-                        console.log('原图 url', messageContent.url);
-                    break;
-                    case RongIMClient.MessageType.UnknownMessage: // 未知消息
-                        console.log('未知消息, 请检查消息自定义格式是否正确', message);
-                    break;
-                    default:
-                        console.log('收到消息', message);
-                    break;
-                }
-            }
-        });
     },
 }
 </script>

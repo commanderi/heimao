@@ -17,9 +17,14 @@ import 'muse-ui-message/dist/muse-ui-message.css';
 import './assets/css/style.css';
 import head from './components/global/head'
 import nav from './components/global/nav'
-
+import friend from './components/global/friend'
+import chat from './components/global/chat'
+import my from './components/global/my'
 Vue.component('app-head',head);
 Vue.component('app-nav',nav);
+Vue.component('app-friend',friend);
+Vue.component('app-chat',chat);
+Vue.component('app-my',my);
 Vue.prototype.$http = Axios
 Vue.config.productionTip = false
 Vue.use(MuseUI);
@@ -47,7 +52,6 @@ Vue.use(Message,{
     transition: 'scale'                             // 对话框显示的动画 'slide-left', 'slide-right', 'fade', 'scale'
   });
 Vue.use(Loading);
-
 var RongIMLib = require('../static/js/RongIMLib-2.5.0.js');  // RongIMLib 相对路径
 var Protobuf = require('../static/js/protobuf-2.3.5.min.js');  // protobuf 相对路径
 var RongIMClient = RongIMLib.RongIMClient;

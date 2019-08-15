@@ -1,17 +1,11 @@
 <template>
-    <div class="index">
-        <div class="index_x">
-            <app-head></app-head>
-            <div class="con uesrcon" v-if="userInfo!=null">
-                <div class="userImg"><img :src="userInfo.image"></div>
-                <p>昵称：{{ userInfo.nickname }}</p>
-                <p>账号：{{ userInfo.mobile }}</p>
-                <p>性别：{{ userInfo.sex==1 ? '男' : '女' }}</p>
-                <p>账户类型：{{ userInfo.identity==1 ? '用户' : '主播' }}</p>
-                <button class="tuichu" v-on:click="signOut">退出登录</button>
-            </div>
-            <app-nav></app-nav>
-        </div>
+    <div class="con uesrcon" v-if="userInfo!=null">
+        <div class="userImg"><img :src="userInfo.image"></div>
+        <p>昵称：{{ userInfo.nickname }}</p>
+        <p>账号：{{ userInfo.mobile }}</p>
+        <p>性别：{{ userInfo.sex==1 ? '男' : '女' }}</p>
+        <p>账户类型：{{ userInfo.identity==1 ? '用户' : '主播' }}</p>
+        <button class="tuichu" v-on:click="signOut">退出登录</button>
     </div>
 </template>
 <script>
